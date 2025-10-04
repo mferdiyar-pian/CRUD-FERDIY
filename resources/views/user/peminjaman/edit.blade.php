@@ -133,7 +133,7 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('peminjaman.index') }}">
+            <a class="navbar-brand" href="{{ route('user.peminjaman.index') }}">
                 <i class="fas fa-calendar-check me-2"></i>
                 <strong>Sistem Peminjaman</strong>
             </a>
@@ -143,21 +143,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.index') }}"><i class="fas fa-list me-1"></i> Daftar Peminjaman</a>
+                        <a class="nav-link" href="{{ route('user.peminjaman.index') }}"><i class="fas fa-list me-1"></i> Daftar Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.create') }}"><i class="fas fa-plus-circle me-1"></i> Tambah Peminjaman</a>
+                        <a class="nav-link" href="{{ route('user.peminjaman.create') }}"><i class="fas fa-plus-circle me-1"></i> Tambah Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('peminjaman.edit', 12) }}"></i> Edit Peminjaman</a>
+                        <a class="nav-link active" href="#"><i class="fas fa-edit me-1"></i> Edit Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.riwayat') }}">
+                        <a class="nav-link" href="{{ route('user.peminjaman.riwayat') }}">
                             <i class="fas fa-history me-1"></i> Riwayat
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-cog me-1"></i> Pengaturan</a>
+                        <a class="nav-link" href="{{ route('user.pengembalian.index') }}">
+                            <i class="fas fa-undo me-1"></i> Pengembalian
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -173,72 +175,130 @@
                     <p class="mb-0">Perbarui informasi peminjaman sesuai kebutuhan</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <a href="{{ route('peminjaman.index') }}" class="btn btn-dark">
+                    <a href="{{ route('user.peminjaman.index') }}" class="btn btn-dark">
                         <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
                     </a>
                 </div>
             </div>
         </div>
 
+        <!-- Alert Notifikasi -->
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Terjadi kesalahan:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <!-- Form Edit Peminjaman -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card card-custom">
                     <div class="card-body p-4">
-                        <form action="{{ route('peminjaman.update', $peminjaman->id) }}" method="POST">
+                        <form action="{{ route('user.peminjaman.update', $peminjaman->id) }}" method="POST">
                             @csrf
+                            @method('PUT')
                             
                             <!-- Info Status -->
                             <div class="alert alert-info d-flex align-items-center">
                                 <i class="fas fa-info-circle fa-2x me-3"></i>
                                 <div>
-                                    <h6 class="mb-1">Data Peminjaman</h6>
+                                    <h6 class="mb-1">Status Peminjaman: 
+                                        @if($peminjaman->status == 'pending')
+                                            <span class="badge bg-warning text-dark">Menunggu Persetujuan</span>
+                                        @elseif($peminjaman->status == 'disetujui')
+                                            <span class="badge bg-success">Disetujui</span>
+                                        @elseif($peminjaman->status == 'ditolak')
+                                            <span class="badge bg-danger">Ditolak</span>
+                                        @endif
+                                    </h6>
                                     <p class="mb-0">Terakhir diubah: {{ \Carbon\Carbon::parse($peminjaman->updated_at)->format('d M Y H:i') }}</p>
                                 </div>
                             </div>
+
+                            @if($peminjaman->status != 'pending')
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Perhatian:</strong> Hanya peminjaman dengan status "Menunggu" yang dapat diedit.
+                                </div>
+                            @endif
                             
                             <div class="mb-4">
                                 <label class="form-label">Tanggal Peminjaman</label>
                                 <div class="input-icon">
                                     <i class="fas fa-calendar-day"></i>
-                                    <input type="date" name="tanggal" class="form-control" value="{{ $peminjaman->tanggal }}" required>
+                                    <input type="date" name="tanggal" class="form-control" value="{{ old('tanggal', $peminjaman->tanggal) }}" 
+                                           {{ $peminjaman->status != 'pending' ? 'disabled' : '' }} required>
                                 </div>
+                                @error('tanggal')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Ruang</label>
                                 <div class="input-icon">
                                     <i class="fas fa-door-open"></i>
-                                    <input type="text" name="ruang" class="form-control" value="{{ $peminjaman->ruang }}" required>
+                                    <input type="text" name="ruang" class="form-control" value="{{ old('ruang', $peminjaman->ruang) }}" 
+                                           {{ $peminjaman->status != 'pending' ? 'disabled' : '' }} required>
                                 </div>
+                                @error('ruang')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Proyektor</label>
                                 <div class="input-icon">
                                     <i class="fas fa-video"></i>
-                                    <select name="proyektor" class="form-select" required>
-                                        <option value="1" {{ $peminjaman->proyektor ? 'selected' : '' }}>Ya, butuh proyektor</option>
-                                        <option value="0" {{ !$peminjaman->proyektor ? 'selected' : '' }}>Tidak butuh proyektor</option>
+                                    <select name="proyektor" class="form-select" {{ $peminjaman->status != 'pending' ? 'disabled' : '' }} required>
+                                        <option value="1" {{ old('proyektor', $peminjaman->proyektor) == '1' ? 'selected' : '' }}>Ya, butuh proyektor</option>
+                                        <option value="0" {{ old('proyektor', $peminjaman->proyektor) == '0' ? 'selected' : '' }}>Tidak butuh proyektor</option>
                                     </select>
                                 </div>
+                                @error('proyektor')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Keperluan</label>
                                 <div class="input-icon">
                                     <i class="fas fa-clipboard-list"></i>
-                                    <textarea name="keperluan" class="form-control" rows="4" required>{{ $peminjaman->keperluan }}</textarea>
+                                    <textarea name="keperluan" class="form-control" rows="4" 
+                                              {{ $peminjaman->status != 'pending' ? 'disabled' : '' }} required>{{ old('keperluan', $peminjaman->keperluan) }}</textarea>
                                 </div>
+                                @error('keperluan')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary-custom me-md-2">
+                                <a href="{{ route('user.peminjaman.index') }}" class="btn btn-secondary-custom me-md-2">
                                     <i class="fas fa-times me-2"></i>Batal
                                 </a>
-                                <button type="submit" class="btn btn-warning-custom">
-                                    <i class="fas fa-save me-2"></i>Perbarui Data
-                                </button>
+                                @if($peminjaman->status == 'pending')
+                                    <button type="submit" class="btn btn-warning-custom">
+                                        <i class="fas fa-save me-2"></i>Perbarui Data
+                                    </button>
+                                @else
+                                    <button type="button" class="btn btn-warning-custom" disabled>
+                                        <i class="fas fa-ban me-2"></i>Tidak Dapat Edit
+                                    </button>
+                                @endif
                             </div>
                         </form>
                     </div>
@@ -247,7 +307,7 @@
                 <!-- Info Box -->
                 <div class="card card-custom mt-4">
                     <div class="card-body">
-                        <h5><i class="fas fa-history text-warning me-2"></i> Riwayat Perubahan</h5>
+                        <h5><i class="fas fa-history text-warning me-2"></i> Riwayat Peminjaman</h5>
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-light rounded-circle p-3 me-3">
                                 <i class="fas fa-plus text-success"></i>
@@ -277,28 +337,41 @@
         // Set tanggal minimum ke hari ini
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[type="date"]').setAttribute('min', today);
+            const dateInput = document.querySelector('input[type="date"]');
+            
+            if (dateInput) {
+                dateInput.setAttribute('min', today);
+            }
             
             // Validasi form
             const form = document.querySelector('form');
-            form.addEventListener('submit', function(e) {
-                const ruang = document.querySelector('input[name="ruang"]').value;
-                const keperluan = document.querySelector('textarea[name="keperluan"]').value;
-                
-                if (ruang.trim() === '') {
-                    e.preventDefault();
-                    alert('Nama ruang tidak boleh kosong');
-                    return false;
-                }
-                
-                if (keperluan.trim() === '') {
-                    e.preventDefault();
-                    alert('Keperluan tidak boleh kosong');
-                    return false;
-                }
-            });
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const ruang = document.querySelector('input[name="ruang"]').value;
+                    const keperluan = document.querySelector('textarea[name="keperluan"]').value;
+                    
+                    if (ruang.trim() === '') {
+                        e.preventDefault();
+                        alert('Nama ruang tidak boleh kosong');
+                        return false;
+                    }
+                    
+                    if (keperluan.trim() === '') {
+                        e.preventDefault();
+                        alert('Keperluan tidak boleh kosong');
+                        return false;
+                    }
+
+                    // Cek status peminjaman
+                    const status = "{{ $peminjaman->status }}";
+                    if (status !== 'pending') {
+                        e.preventDefault();
+                        alert('Tidak dapat mengedit peminjaman yang sudah disetujui atau ditolak');
+                        return false;
+                    }
+                });
+            }
         });
     </script>
 </body>
 </html>
-

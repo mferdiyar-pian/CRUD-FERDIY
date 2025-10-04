@@ -10,9 +10,9 @@ use Carbon\Carbon;
 class AdminController extends Controller
 {
     /**
-     * Display dashboard admin
+     * Display halaman peminjaman admin (menggantikan dashboard)
      */
-    public function dashboard(Request $request)
+    public function peminjaman(Request $request)
     {
         // Query untuk statistik
         $pendingCount = Peminjaman::where('status', 'pending')->count();
@@ -60,7 +60,7 @@ class AdminController extends Controller
 
         $peminjamans = $query->paginate(10);
 
-        return view('admin.dashboard', compact(
+        return view('admin.peminjaman.index', compact(
             'peminjamans',
             'pendingCount',
             'approvedCount',
@@ -91,7 +91,7 @@ class AdminController extends Controller
 
         $peminjamans = $query->orderBy('tanggal', 'desc')->paginate(10);
 
-        return view('admin.pengembalian', compact('peminjamans'));
+        return view('admin.pengembalian.index', compact('peminjamans'));
     }
 
     /**
@@ -136,7 +136,7 @@ class AdminController extends Controller
 
         $riwayat = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        return view('admin.riwayat', compact(
+        return view('admin.riwayat.index', compact(
             'riwayat',
             'completedCount',
             'cancelledCount',
@@ -150,7 +150,7 @@ class AdminController extends Controller
      */
     public function index(Request $request)
     {
-        return $this->dashboard($request);
+        return $this->peminjaman($request);
     }
 
     /**
@@ -183,7 +183,7 @@ class AdminController extends Controller
             'status' => 'disetujui', // Otomatis disetujui jika dibuat admin
         ]);
 
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.peminjaman.index')
                         ->with('success', 'Peminjaman berhasil ditambahkan.');
     }
 
@@ -195,7 +195,7 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
         $peminjaman->update(['status' => 'disetujui']);
 
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.peminjaman.index')
                         ->with('success', 'Peminjaman berhasil disetujui.');
     }
 
@@ -207,7 +207,7 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
         $peminjaman->update(['status' => 'ditolak']);
 
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.peminjaman.index')
                         ->with('success', 'Peminjaman berhasil ditolak.');
     }
 
@@ -242,7 +242,7 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
         $peminjaman->update($request->only(['tanggal', 'ruang', 'proyektor', 'keperluan', 'status']));
 
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.peminjaman.index')
                         ->with('success', 'Peminjaman berhasil diperbarui.');
     }
 
@@ -254,27 +254,77 @@ class AdminController extends Controller
         $peminjaman = Peminjaman::findOrFail($id);
         $peminjaman->delete();
 
-        return redirect()->route('admin.dashboard')
+        return redirect()->route('admin.peminjaman.index')
                         ->with('success', 'Peminjaman berhasil dihapus.');
     }
 
     /**
- * Update riwayat peminjaman
- */
-public function updateRiwayat(Request $request, $id)
-{
-    $request->validate([
-        'tanggal' => 'required|date',
-        'ruang' => 'required|string|max:100',
-        'proyektor' => 'required|boolean',
-        'keperluan' => 'required|string|max:500',
-        'status' => 'required|in:pending,disetujui,ditolak,selesai',
-    ]);
+     * Store pengembalian
+     */
+    public function storePengembalian(Request $request)
+    {
+        $request->validate([
+            'peminjaman_id' => 'required|exists:peminjaman,id',
+            'kondisi' => 'required|string|max:255',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
 
-    $peminjaman = Peminjaman::findOrFail($id);
-    $peminjaman->update($request->only(['tanggal', 'ruang', 'proyektor', 'keperluan', 'status']));
+        $peminjaman = Peminjaman::findOrFail($request->peminjaman_id);
+        $peminjaman->update([
+            'status' => 'selesai',
+            'tanggal_kembali' => Carbon::now(),
+            'kondisi_kembali' => $request->kondisi,
+            'keterangan_kembali' => $request->keterangan
+        ]);
 
-    return redirect()->route('admin.riwayat')
-                    ->with('success', 'Riwayat peminjaman berhasil diperbarui.');
-}
+        return redirect()->route('admin.pengembalian')
+                        ->with('success', 'Pengembalian berhasil dicatat.');
+    }
+
+    /**
+     * Proses pengembalian
+     */
+    public function prosesPengembalian($id)
+    {
+        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman->update([
+            'status' => 'selesai',
+            'tanggal_kembali' => Carbon::now()
+        ]);
+
+        return redirect()->route('admin.pengembalian')
+                        ->with('success', 'Pengembalian berhasil diproses.');
+    }
+
+    /**
+     * Destroy pengembalian
+     */
+    public function destroyPengembalian($id)
+    {
+        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman->delete();
+
+        return redirect()->route('admin.pengembalian')
+                        ->with('success', 'Data pengembalian berhasil dihapus.');
+    }
+
+    /**
+     * Update riwayat peminjaman
+     */
+    public function updateRiwayat(Request $request, $id)
+    {
+        $request->validate([
+            'tanggal' => 'required|date',
+            'ruang' => 'required|string|max:100',
+            'proyektor' => 'required|boolean',
+            'keperluan' => 'required|string|max:500',
+            'status' => 'required|in:pending,disetujui,ditolak,selesai',
+        ]);
+
+        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman->update($request->only(['tanggal', 'ruang', 'proyektor', 'keperluan', 'status']));
+
+        return redirect()->route('admin.riwayat')
+                        ->with('success', 'Riwayat peminjaman berhasil diperbarui.');
+    }
 }

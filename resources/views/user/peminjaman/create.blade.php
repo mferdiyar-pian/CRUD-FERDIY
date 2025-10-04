@@ -123,7 +123,7 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('peminjaman.index') }}">
+            <a class="navbar-brand" href="{{ route('user.peminjaman.index') }}">
                 <i class="fas fa-calendar-check me-2"></i>
                 <strong>Sistem Peminjaman</strong>
             </a>
@@ -133,21 +133,20 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.index') }}"><i class="fas fa-list me-1"></i> Daftar Peminjaman</a>
+                        <a class="nav-link" href="{{ route('user.peminjaman.index') }}"><i class="fas fa-list me-1"></i> Daftar Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('peminjaman.create') }}"><i class="fas fa-plus-circle me-1"></i> Tambah Peminjaman</a>
+                        <a class="nav-link active" href="{{ route('user.peminjaman.create') }}"><i class="fas fa-plus-circle me-1"></i> Tambah Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.edit', 12) }}"></i> Edit Peminjaman</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.riwayat') }}">
+                        <a class="nav-link" href="{{ route('user.peminjaman.riwayat') }}">
                             <i class="fas fa-history me-1"></i> Riwayat
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-cog me-1"></i> Pengaturan</a>
+                        <a class="nav-link" href="{{ route('user.pengembalian.index') }}">
+                            <i class="fas fa-undo me-1"></i> Pengembalian
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -163,35 +162,62 @@
                     <p class="mb-0">Isi form berikut untuk menambahkan data peminjaman baru</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <a href="{{ route('peminjaman.index') }}" class="btn btn-light">
+                    <a href="{{ route('user.peminjaman.index') }}" class="btn btn-light">
                         <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
                     </a>
                 </div>
             </div>
         </div>
 
+        <!-- Alert Notifikasi -->
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Terjadi kesalahan:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         <!-- Form Peminjaman -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card card-custom">
                     <div class="card-body p-4">
-                        <form action="{{ route('peminjaman.store') }}" method="POST">
+                        <form action="{{ route('user.peminjaman.store') }}" method="POST">
                             @csrf
                             
                             <div class="mb-4">
                                 <label class="form-label">Tanggal Peminjaman</label>
                                 <div class="input-icon">
                                     <i class="fas fa-calendar-day"></i>
-                                    <input type="date" name="tanggal" class="form-control" required>
+                                    <input type="date" name="tanggal" class="form-control" value="{{ old('tanggal') }}" required>
                                 </div>
+                                @error('tanggal')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Ruang</label>
                                 <div class="input-icon">
                                     <i class="fas fa-door-open"></i>
-                                    <input type="text" name="ruang" class="form-control" placeholder="Masukkan nama ruang" required>
+                                    <input type="text" name="ruang" class="form-control" placeholder="Masukkan nama ruang" value="{{ old('ruang') }}" required>
                                 </div>
+                                @error('ruang')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
@@ -200,22 +226,28 @@
                                     <i class="fas fa-video"></i>
                                     <select name="proyektor" class="form-select" required>
                                         <option value="">-- Pilih Ketersediaan --</option>
-                                        <option value="1">Ya, butuh proyektor</option>
-                                        <option value="0">Tidak butuh proyektor</option>
+                                        <option value="1" {{ old('proyektor') == '1' ? 'selected' : '' }}>Ya, butuh proyektor</option>
+                                        <option value="0" {{ old('proyektor') == '0' ? 'selected' : '' }}>Tidak butuh proyektor</option>
                                     </select>
                                 </div>
+                                @error('proyektor')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label">Keperluan</label>
                                 <div class="input-icon">
                                     <i class="fas fa-clipboard-list"></i>
-                                    <textarea name="keperluan" class="form-control" rows="4" placeholder="Jelaskan keperluan peminjaman" required></textarea>
+                                    <textarea name="keperluan" class="form-control" rows="4" placeholder="Jelaskan keperluan peminjaman" required>{{ old('keperluan') }}</textarea>
                                 </div>
+                                @error('keperluan')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary-custom me-md-2">
+                                <a href="{{ route('user.peminjaman.index') }}" class="btn btn-secondary-custom me-md-2">
                                     <i class="fas fa-times me-2"></i>Batal
                                 </a>
                                 <button type="submit" class="btn btn-primary-custom">
@@ -234,6 +266,7 @@
                             <li>Pastikan untuk memeriksa ketersediaan ruangan sebelum melakukan peminjaman</li>
                             <li>Peminjaman proyektor harus dilakukan minimal 1 hari sebelumnya</li>
                             <li>Hubungi administrator untuk bantuan terkait peminjaman</li>
+                            <li>Status peminjaman akan ditinjau oleh administrator</li>
                         </ul>
                     </div>
                 </div>
@@ -246,26 +279,44 @@
         // Set tanggal minimum ke hari ini
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[type="date"]').setAttribute('min', today);
+            const dateInput = document.querySelector('input[type="date"]');
+            
+            if (dateInput) {
+                dateInput.setAttribute('min', today);
+                
+                // Jika tidak ada nilai sebelumnya, set ke hari ini
+                if (!dateInput.value) {
+                    dateInput.value = today;
+                }
+            }
             
             // Validasi form
             const form = document.querySelector('form');
-            form.addEventListener('submit', function(e) {
-                const ruang = document.querySelector('input[name="ruang"]').value;
-                const keperluan = document.querySelector('textarea[name="keperluan"]').value;
-                
-                if (ruang.trim() === '') {
-                    e.preventDefault();
-                    alert('Nama ruang tidak boleh kosong');
-                    return false;
-                }
-                
-                if (keperluan.trim() === '') {
-                    e.preventDefault();
-                    alert('Keperluan tidak boleh kosong');
-                    return false;
-                }
-            });
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const ruang = document.querySelector('input[name="ruang"]').value;
+                    const keperluan = document.querySelector('textarea[name="keperluan"]').value;
+                    const proyektor = document.querySelector('select[name="proyektor"]').value;
+                    
+                    if (ruang.trim() === '') {
+                        e.preventDefault();
+                        alert('Nama ruang tidak boleh kosong');
+                        return false;
+                    }
+                    
+                    if (keperluan.trim() === '') {
+                        e.preventDefault();
+                        alert('Keperluan tidak boleh kosong');
+                        return false;
+                    }
+                    
+                    if (proyektor === '') {
+                        e.preventDefault();
+                        alert('Pilih ketersediaan proyektor');
+                        return false;
+                    }
+                });
+            }
         });
     </script>
 </body>

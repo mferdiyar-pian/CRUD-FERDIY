@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Peminjaman - Sistem Manajemen Peminjaman</title>
+    <title>Riwayat Peminjaman - Sistem Manajemen Peminjaman</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -72,54 +72,6 @@
             font-size: 0.85rem;
         }
 
-        .btn-action-disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ===== TOMBOL DISABLED ===== */
-        .btn-action-disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            pointer-events: none;
-            filter: grayscale(0.7);
-        }
-
-        .btn-action:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            pointer-events: none;
-            filter: grayscale(0.7);
-        }
-
-        /* Tooltip khusus untuk tombol disabled */
-        .btn-action-disabled[title] {
-            position: relative;
-        }
-
-        .btn-action-disabled[title]::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-
-        .btn-action-disabled[title]:hover::after {
-            opacity: 1;
-            visibility: visible;
-        }
-
         /* ===== TABEL ===== */
         .table-container {
             background-color: white;
@@ -181,6 +133,12 @@
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+
+        .status-selesai {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         .status-berlangsung {
@@ -348,29 +306,6 @@
             margin-top: 4px;
         }
 
-        /* ===== MODAL ===== */
-        .modal-detail {
-            max-width: 600px;
-        }
-
-        .detail-item {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .detail-value {
-            color: #212529;
-            font-size: 1rem;
-        }
-
         /* ===== PERBAIKAN VISUAL ===== */
         .page-header {
             margin-bottom: 1.5rem;
@@ -411,14 +346,6 @@
         }
 
         /* ===== RESPONSIVITAS ===== */
-        @media (max-width: 992px) {
-            .filter-tab {
-                min-width: 100px;
-                padding: 8px 10px;
-                font-size: 0.85rem;
-            }
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding-left: 15px;
@@ -459,10 +386,6 @@
                 min-width: 80px;
             }
 
-            .card-body {
-                padding: 15px;
-            }
-
             .filter-tabs {
                 flex-wrap: wrap;
                 overflow-x: auto;
@@ -478,38 +401,12 @@
                 white-space: nowrap;
             }
 
-            .navbar-brand {
-                font-size: 1rem;
-            }
-
-            h2 {
-                font-size: 1.5rem;
-            }
-
             .page-header .col-md-6 {
                 margin-bottom: 15px;
             }
 
             .page-header .text-md-end {
                 text-align: left !important;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .filter-tab {
-                min-width: 90px;
-                font-size: 0.8rem;
-                padding: 6px 8px;
-            }
-
-            .btn-primary-custom {
-                width: 100%;
-                padding: 12px;
-            }
-
-            .search-container,
-            #ruang-filter {
-                margin-bottom: 15px;
             }
         }
 
@@ -579,7 +476,7 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('peminjaman.index') }}">
+            <a class="navbar-brand" href="{{ route('user.peminjaman.index') }}">
                 <i class="fas fa-calendar-check me-2"></i>
                 <strong>Sistem Peminjaman</strong>
             </a>
@@ -589,23 +486,22 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('peminjaman.index') }}"><i
+                        <a class="nav-link" href="{{ route('user.peminjaman.index') }}"><i
                                 class="fas fa-list me-1"></i> Daftar Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.create') }}"><i
+                        <a class="nav-link" href="{{ route('user.peminjaman.create') }}"><i
                                 class="fas fa-plus-circle me-1"></i> Tambah Peminjaman</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.edit', 12) }}"></i> Edit Peminjaman</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peminjaman.riwayat') }}">
+                        <a class="nav-link active" href="{{ route('user.peminjaman.riwayat') }}">
                             <i class="fas fa-history me-1"></i> Riwayat
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-cog me-1"></i> Pengaturan</a>
+                        <a class="nav-link" href="{{ route('user.pengembalian.index') }}">
+                            <i class="fas fa-undo me-1"></i> Pengembalian
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -617,11 +513,14 @@
         <!-- Header dan Tambah Peminjaman -->
         <div class="row mb-4 page-header">
             <div class="col-md-6">
-                <h2 class="mb-1"><i class="fas fa-list text-primary me-2"></i> Daftar Peminjaman</h2>
-                <p class="text-muted mb-0">Kelola semua peminjaman ruangan dan proyektor</p>
+                <h2 class="mb-1"><i class="fas fa-history text-primary me-2"></i> Riwayat Peminjaman</h2>
+                <p class="text-muted mb-0">Lihat riwayat semua peminjaman yang telah Anda ajukan</p>
             </div>
             <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <a href="{{ route('peminjaman.create') }}" class="btn btn-primary-custom">
+                <a href="{{ route('user.peminjaman.index') }}" class="btn btn-primary-custom me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Kembali ke Daftar
+                </a>
+                <a href="{{ route('user.peminjaman.create') }}" class="btn btn-success">
                     <i class="fas fa-plus-circle me-2"></i>Tambah Peminjaman
                 </a>
             </div>
@@ -635,6 +534,53 @@
             </div>
         @endif
 
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        <!-- Statistik Ringkas -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom text-center">
+                    <div class="card-body">
+                        <i class="fas fa-list-alt fa-2x text-primary mb-2"></i>
+                        <h4 class="mb-1">{{ $riwayat->total() }}</h4>
+                        <p class="text-muted mb-0">Total Peminjaman</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom text-center">
+                    <div class="card-body">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h4 class="mb-1">{{ $riwayat->where('status', 'disetujui')->count() }}</h4>
+                        <p class="text-muted mb-0">Disetujui</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom text-center">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h4 class="mb-1">{{ $riwayat->where('status', 'pending')->count() }}</h4>
+                        <p class="text-muted mb-0">Menunggu</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card card-custom text-center">
+                    <div class="card-body">
+                        <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                        <h4 class="mb-1">{{ $riwayat->where('status', 'ditolak')->count() }}</h4>
+                        <p class="text-muted mb-0">Ditolak</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabs Filter -->
         <div class="filter-tabs">
             <div class="filter-tab active" data-status="semua">Semua</div>
@@ -644,11 +590,11 @@
             <div class="filter-tab" data-status="disetujui">
                 <i class="fas fa-check-circle me-1"></i> Disetujui
             </div>
-            <div class="filter-tab" data-status="berlangsung">
-                <i class="fas fa-play-circle me-1"></i> Berlangsung
-            </div>
             <div class="filter-tab" data-status="ditolak">
                 <i class="fas fa-times-circle me-1"></i> Ditolak
+            </div>
+            <div class="filter-tab" data-status="selesai">
+                <i class="fas fa-check-double me-1"></i> Selesai
             </div>
         </div>
 
@@ -659,7 +605,7 @@
                     <div class="search-container">
                         <i class="fas fa-search"></i>
                         <input type="text" class="form-control search-input"
-                            placeholder="Cari berdasarkan ruang, keperluan, atau peminjam...">
+                            placeholder="Cari berdasarkan ruang, keperluan, atau tanggal...">
                     </div>
                     <div>
                         <select class="form-select" id="ruang-filter">
@@ -669,11 +615,14 @@
                             <option value="Ruang C">Ruang C</option>
                         </select>
                     </div>
+                    <div>
+                        <input type="date" class="form-control" id="tanggal-filter" placeholder="Filter Tanggal">
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tabel Peminjaman -->
+        <!-- Tabel Riwayat Peminjaman -->
         <div class="table-container">
             <div class="table-responsive table-responsive-custom">
                 <table class="table table-hover mb-0">
@@ -685,11 +634,11 @@
                             <th width="100" class="text-center">Proyektor</th>
                             <th>Keperluan</th>
                             <th width="130" class="text-center">Status</th>
-                            <th width="150" class="text-center">Aksi</th>
+                            <th width="100" class="text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($peminjamans as $peminjaman)
+                        @forelse($riwayat as $peminjaman)
                             @php
                                 // Tentukan apakah peminjaman sedang berlangsung
                                 $isToday = \Carbon\Carbon::parse($peminjaman->tanggal)->isToday();
@@ -704,8 +653,9 @@
                             <tr data-status="{{ $peminjaman->status }}"
                                 class="{{ $isOngoing ? 'today-indicator' : '' }} table-row-highlight"
                                 data-ruang="{{ $peminjaman->ruang }}" data-id="{{ $peminjaman->id }}"
+                                data-tanggal="{{ \Carbon\Carbon::parse($peminjaman->tanggal)->format('Y-m-d') }}"
                                 data-waktu-pengajuan="{{ $waktuPengajuan->format('Y-m-d H:i:s') }}">
-                                <td class="fw-bold text-center">{{ $loop->iteration }}</td>
+                                <td class="fw-bold text-center">{{ ($riwayat->currentPage() - 1) * $riwayat->perPage() + $loop->iteration }}</td>
                                 <td>
                                     <div>
                                         <i class="fas fa-calendar-day text-primary me-1"></i>
@@ -759,47 +709,23 @@
                                         <span class="badge status-badge status-ditolak">
                                             <i class="fas fa-times-circle me-1"></i> Ditolak
                                         </span>
+                                    @elseif($peminjaman->status == 'selesai')
+                                        <span class="badge status-badge status-selesai">
+                                            <i class="fas fa-check-double me-1"></i> Selesai
+                                        </span>
                                     @else
                                         <span class="badge status-badge status-menunggu">
                                             <i class="fas fa-clock me-1"></i> Menunggu
                                         </span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <div class="action-buttons">
-                                        <!-- Tombol Detail (Modal) -->
-                                        <button class="btn btn-info btn-action btn-detail" title="Lihat Detail"
-                                            data-id="{{ $peminjaman->id }}">
+                                        <a href="{{ route('user.peminjaman.show', $peminjaman->id) }}" 
+                                           class="btn btn-info btn-action" 
+                                           title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
-                                        </button>
-
-                                        <!-- Tombol Edit - hanya aktif untuk status 'pending' -->
-                                        @if ($peminjaman->status == 'pending')
-                                            <a href="{{ route('peminjaman.edit', $peminjaman->id) }}"
-                                                class="btn btn-warning btn-action" title="Edit Peminjaman">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        @else
-                                            <button class="btn btn-warning btn-action btn-action-disabled"
-                                                title="Tidak dapat mengedit peminjaman yang sudah {{ $peminjaman->status == 'disetujui' ? 'disetujui' : 'ditolak' }}"
-                                                disabled>
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        @endif
-
-                                        <!-- Tombol Hapus - hanya aktif untuk status 'pending' -->
-                                        @if ($peminjaman->status == 'pending')
-                                            <a href="{{ route('peminjaman.delete', $peminjaman->id) }}"
-                                                class="btn btn-danger btn-action btn-delete" title="Hapus Peminjaman">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </a>
-                                        @else
-                                            <button class="btn btn-danger btn-action btn-action-disabled"
-                                                title="Tidak dapat menghapus peminjaman yang sudah {{ $peminjaman->status == 'disetujui' ? 'disetujui' : 'ditolak' }}"
-                                                disabled>
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        @endif
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -808,10 +734,9 @@
                                 <td colspan="7" class="no-data-row">
                                     <div class="empty-state">
                                         <i class="fas fa-inbox"></i>
-                                        <h4 class="mt-3">Belum ada data peminjaman</h4>
+                                        <h4 class="mt-3">Belum ada riwayat peminjaman</h4>
                                         <p class="text-muted">Silahkan tambah data peminjaman baru dengan menekan
-                                            tombol
-                                            "Tambah Peminjaman"</p>
+                                            tombol "Tambah Peminjaman"</p>
                                     </div>
                                 </td>
                             </tr>
@@ -822,63 +747,61 @@
         </div>
 
         <!-- Pagination -->
-        @if ($peminjamans->count() > 0)
+        @if ($riwayat->hasPages())
             <div class="d-flex justify-content-center mt-4">
                 <nav>
                     <ul class="pagination pagination-custom">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </li>
+                        {{-- Previous Page Link --}}
+                        @if ($riwayat->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $riwayat->previousPageUrl() }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @foreach ($riwayat->getUrlRange(1, $riwayat->lastPage()) as $page => $url)
+                            <li class="page-item {{ $page == $riwayat->currentPage() ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                            </li>
+                        @endforeach
+
+                        {{-- Next Page Link --}}
+                        @if ($riwayat->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $riwayat->nextPageUrl() }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </li>
+                        @endif
                     </ul>
                 </nav>
             </div>
         @endif
     </div>
 
-    <!-- Modal Detail Peminjaman -->
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-detail">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="detailModalLabel">Detail Peminjaman</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="modalBody">
-                    <!-- Konten modal akan diisi oleh JavaScript -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ===== KONFIRMASI HAPUS =====
-        function confirmDelete(e) {
-            e.preventDefault();
-            if (confirm('Apakah Anda yakin ingin menghapus data peminjaman ini?')) {
-                window.location.href = e.currentTarget.href;
-            }
-        }
-
         // ===== FILTER TABEL =====
         function filterTable() {
             const searchText = document.querySelector('.search-input').value.toLowerCase();
             const activeTab = document.querySelector('.filter-tab.active');
             const statusFilter = activeTab ? activeTab.getAttribute('data-status') : 'semua';
             const ruangFilter = document.getElementById('ruang-filter').value;
+            const tanggalFilter = document.getElementById('tanggal-filter').value;
 
             const rows = document.querySelectorAll('tbody tr');
 
@@ -886,83 +809,22 @@
                 const text = row.textContent.toLowerCase();
                 const rowStatus = row.getAttribute('data-status');
                 const rowRuang = row.getAttribute('data-ruang');
+                const rowTanggal = row.getAttribute('data-tanggal');
 
-                // Filter berdasarkan pencarian, status, dan ruang
+                // Filter berdasarkan pencarian, status, ruang, dan tanggal
                 const textMatch = text.includes(searchText);
                 const statusMatch = statusFilter === 'semua' ||
                     (statusFilter === 'berlangsung' ? row.classList.contains('today-indicator') : rowStatus ===
                         statusFilter);
                 const ruangMatch = ruangFilter === 'semua' || rowRuang === ruangFilter;
+                const tanggalMatch = !tanggalFilter || rowTanggal === tanggalFilter;
 
-                if (textMatch && statusMatch && ruangMatch) {
+                if (textMatch && statusMatch && ruangMatch && tanggalMatch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             });
-        }
-
-        // ===== TAMPILKAN MODAL DETAIL =====
-        function showDetailModal(id) {
-            const row = document.querySelector(`tr[data-id="${id}"]`);
-
-            if (row) {
-                const cells = row.querySelectorAll('td');
-                const waktuPengajuan = row.getAttribute('data-waktu-pengajuan');
-
-                // Format waktu pengajuan
-                const waktuPengajuanObj = new Date(waktuPengajuan);
-                const waktuPengajuanFormatted = waktuPengajuanObj.toLocaleString('id-ID', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                // Ambil data dari baris
-                const tanggal = cells[1].querySelector('div:first-child').textContent.trim();
-                const waktu = cells[1].querySelector('.time-badge').textContent.trim();
-                const ruang = cells[2].textContent.trim();
-                const proyektor = cells[3].textContent.trim();
-                const keperluan = cells[4].textContent.trim();
-                const status = cells[5].textContent.trim();
-
-                // Buat konten modal
-                const modalContent = `
-                    <div class="detail-item">
-                        <div class="detail-label">Tanggal & Waktu Peminjaman</div>
-                        <div class="detail-value">${tanggal} | ${waktu}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Waktu Pengajuan</div>
-                        <div class="detail-value">${waktuPengajuanFormatted}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Ruang</div>
-                        <div class="detail-value">${ruang}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Proyektor</div>
-                        <div class="detail-value">${proyektor}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Keperluan</div>
-                        <div class="detail-value">${keperluan}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value">${status}</div>
-                    </div>
-                `;
-
-                document.getElementById('modalBody').innerHTML = modalContent;
-
-                // Tampilkan modal
-                const modal = new bootstrap.Modal(document.getElementById('detailModal'));
-                modal.show();
-            }
         }
 
         // ===== FUNGSI UNTUK MEMPERBARUI WAKTU RELATIF =====
@@ -1011,11 +873,6 @@
 
         // ===== INISIALISASI EVENT LISTENER =====
         document.addEventListener('DOMContentLoaded', function() {
-            // Event listener untuk tombol hapus
-            document.querySelectorAll('.btn-delete').forEach(button => {
-                button.addEventListener('click', confirmDelete);
-            });
-
             // Event listener untuk pencarian
             const searchInput = document.querySelector('.search-input');
             searchInput.addEventListener('keyup', filterTable);
@@ -1038,13 +895,8 @@
             // Event listener untuk filter ruang
             document.getElementById('ruang-filter').addEventListener('change', filterTable);
 
-            // Event listener untuk tombol detail
-            document.querySelectorAll('.btn-detail').forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    showDetailModal(id);
-                });
-            });
+            // Event listener untuk filter tanggal
+            document.getElementById('tanggal-filter').addEventListener('change', filterTable);
 
             // Perbarui waktu relatif setiap menit
             updateRelativeTimes();

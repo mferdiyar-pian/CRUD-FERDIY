@@ -9,15 +9,31 @@ use Carbon\Carbon;
 
 class PeminjamanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $peminjamans = Peminjaman::all();
-        return view('peminjaman.index', compact('peminjamans'));
+        $userId = auth()->id() ?? 1;
+        $query = Peminjaman::where('user_id', $userId);
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('keperluan', 'like', "%{$search}%")
+                  ->orWhere('ruang', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        $peminjamans = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('user.peminjaman.index', compact('peminjamans'));
     }
 
     public function create()
     {
-        return view('peminjaman.create');
+        return view('user.peminjaman.create');
     }
 
     public function store(Request $request)
@@ -30,20 +46,29 @@ class PeminjamanController extends Controller
         ]);
 
         Peminjaman::create([
-            'user_id'   => auth()->id() ?? 1, // sementara default 1
+            'user_id'   => auth()->id() ?? 1,
             'tanggal'   => $request->tanggal,
             'ruang'     => $request->ruang,
             'proyektor' => $request->proyektor,
             'keperluan' => $request->keperluan,
+            'status'    => 'pending',
         ]);
 
-        return redirect()->route('peminjaman.index')->with('success', 'Data berhasil disimpan');
+        return redirect()->route('user.peminjaman.index')->with('success', 'Data berhasil disimpan');
+    }
+
+    public function show($id)
+    {
+        $userId = auth()->id() ?? 1;
+        $peminjaman = Peminjaman::where('user_id', $userId)->findOrFail($id);
+        return view('user.peminjaman.show', compact('peminjaman'));
     }
 
     public function edit($id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
-        return view('peminjaman.edit', compact('peminjaman'));
+        $userId = auth()->id() ?? 1;
+        $peminjaman = Peminjaman::where('user_id', $userId)->findOrFail($id);
+        return view('user.peminjaman.edit', compact('peminjaman'));
     }
 
     public function update(Request $request, $id)
@@ -55,7 +80,8 @@ class PeminjamanController extends Controller
             'keperluan' => 'required|string|max:255',
         ]);
 
-        $peminjaman = Peminjaman::findOrFail($id);
+        $userId = auth()->id() ?? 1;
+        $peminjaman = Peminjaman::where('user_id', $userId)->findOrFail($id);
 
         $peminjaman->update([
             'tanggal'   => $request->tanggal,
@@ -64,144 +90,95 @@ class PeminjamanController extends Controller
             'keperluan' => $request->keperluan,
         ]);
 
-        return redirect()->route('peminjaman.index')->with('success', 'Data berhasil diupdate');
+        return redirect()->route('user.peminjaman.index')->with('success', 'Data berhasil diupdate');
     }
 
     public function destroy($id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
+        $userId = auth()->id() ?? 1;
+        $peminjaman = Peminjaman::where('user_id', $userId)->findOrFail($id);
         $peminjaman->delete();
 
-        return redirect()->route('peminjaman.index')->with('success', 'Data berhasil dihapus');
+        return redirect()->route('user.peminjaman.index')->with('success', 'Data berhasil dihapus');
     }
 
-    public function riwayat()
+    public function riwayat(Request $request)
     {
-        $riwayat = Peminjaman::where('user_id', auth()->id() ?? 1)
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-        return view('peminjaman.riwayat', compact('riwayat'));
-    }
+        $userId = auth()->id() ?? 1;
+        $query = Peminjaman::where('user_id', $userId);
 
-    /**
-     * Menampilkan halaman pengembalian untuk user
-     */
-    public function pengembalianUser(Request $request)
-    {
-        $user = auth()->user();
-        $userId = $user ? $user->id : 1; // Fallback untuk testing
-        
-        $query = Pengembalian::where('user_id', $userId);
-        
-        // Filter pencarian
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('ruang', 'like', "%{$search}%")
-                  ->orWhere('catatan', 'like', "%{$search}%");
+                $q->where('keperluan', 'like', "%{$search}%")
+                  ->orWhere('ruang', 'like', "%{$search}%");
             });
         }
-        
-        // Filter status
+
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
-        
-        // Filter ruang
-        if ($request->has('ruang') && $request->ruang != 'semua') {
-            $query->where('ruang', $request->ruang);
-        }
-        
-        // Sorting
-        $sort = $request->get('sort', 'terbaru');
-        switch ($sort) {
-            case 'terlama':
-                $query->orderBy('created_at', 'asc');
-                break;
-            case 'tanggal_pinjam':
-                $query->orderBy('tanggal_pinjam', 'desc');
-                break;
-            case 'tanggal_kembali':
-                $query->orderBy('tanggal_kembali', 'desc');
-                break;
-            default:
-                $query->orderBy('created_at', 'desc');
-        }
-        
-        $pengembalians = $query->paginate(10);
-        
-        // Hitung statistik
-        $pendingReturns = Pengembalian::where('user_id', $userId)
-            ->where('status', 'belum_dikembalikan')->count();
-        $returnedCount = Pengembalian::where('user_id', $userId)
-            ->where('status', 'dikembalikan')->count();
-        $overdueCount = Pengembalian::where('user_id', $userId)
-            ->where('status', 'terlambat')->count();
-        $totalReturns = Pengembalian::where('user_id', $userId)->count();
-        
-        return view('pengembalian.index', compact(
-            'pengembalians',
-            'pendingReturns',
-            'returnedCount',
-            'overdueCount',
-            'totalReturns'
-        ));
+
+        $riwayat = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        return view('user.peminjaman.riwayat', compact('riwayat'));
     }
 
-    /**
-     * Method untuk mengajukan pengembalian oleh user
-     */
-    public function ajukanPengembalian(Request $request, $id)
+    public function pengembalianUser(Request $request)
     {
-        $request->validate([
-            'kondisi_barang' => 'required|in:Baik,Rusak Ringan,Rusak Berat',
-            'keterangan' => 'nullable|string|max:500'
-        ]);
+        $userId = auth()->id() ?? 1;
+        
+        $query = Peminjaman::where('user_id', $userId)
+                          ->where('status', 'disetujui')
+                          ->whereDate('tanggal', '<=', Carbon::now());
 
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('keperluan', 'like', "%{$search}%")
+                  ->orWhere('ruang', 'like', "%{$search}%");
+            });
+        }
+
+        $peminjamans = $query->orderBy('tanggal', 'desc')->paginate(10);
+
+        return view('user.pengembalian.index', compact('peminjamans'));
+    }
+
+    public function ajukanPengembalian($id)
+    {
         try {
-            $pengembalian = Pengembalian::findOrFail($id);
-            
-            // Pastikan pengembalian milik user yang login
             $userId = auth()->id() ?? 1;
-            if ($pengembalian->user_id != $userId) {
-                return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengajukan pengembalian ini.');
-            }
+            $peminjaman = Peminjaman::where('user_id', $userId)
+                                   ->where('status', 'disetujui')
+                                   ->findOrFail($id);
             
-            // Update data pengembalian
-            $pengembalian->tanggal_kembali = Carbon::now();
-            $pengembalian->status = 'dikembalikan';
-            $pengembalian->catatan = "Kondisi: {$request->kondisi_barang}. " . ($request->keterangan ?? '');
-            $pengembalian->save();
-            
-            // Update status peminjaman terkait jika ada
-            if ($pengembalian->peminjaman) {
-                $pengembalian->peminjaman->status = 'selesai';
-                $pengembalian->peminjaman->save();
-            }
+            $peminjaman->update([
+                'status' => 'selesai',
+                'tanggal_kembali' => Carbon::now()
+            ]);
 
-            return redirect()->route('pengembalian.user')
-                ->with('success', 'Pengembalian berhasil diajukan. Menunggu konfirmasi admin.');
+            Pengembalian::create([
+                'peminjaman_id' => $peminjaman->id,
+                'tanggal_pengembalian' => Carbon::now(),
+                'kondisi_ruangan' => 'baik',
+                'kondisi_proyektor' => $peminjaman->proyektor ? 'baik' : 'tidak_ada',
+                'keterangan' => 'Pengembalian oleh user',
+                'status' => 'dikembalikan',
+            ]);
+
+            return redirect()->route('user.pengembalian.index')->with('success', 'Pengembalian berhasil diajukan.');
                 
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Method untuk melihat detail pengembalian
-     */
     public function showPengembalian($id)
     {
-        $pengembalian = Pengembalian::with(['user', 'peminjaman'])
-            ->findOrFail($id);
-            
-        // Pastikan user hanya bisa melihat pengembalian miliknya sendiri
         $userId = auth()->id() ?? 1;
-        if ($pengembalian->user_id != $userId) {
-            abort(403, 'Unauthorized action.');
-        }
+        $peminjaman = Peminjaman::where('user_id', $userId)->findOrFail($id);
         
-        return view('pengembalian.show', compact('pengembalian'));
+        return view('user.pengembalian.show', compact('peminjaman'));
     }
 }
