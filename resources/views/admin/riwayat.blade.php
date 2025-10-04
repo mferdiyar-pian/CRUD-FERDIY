@@ -490,10 +490,21 @@
             transition: all 0.3s;
         }
 
+        .btn-edit-custom {
+            background: #ffc107;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
         .btn-success-custom:hover,
         .btn-danger-custom:hover,
         .btn-warning-custom:hover,
-        .btn-info-custom:hover {
+        .btn-info-custom:hover,
+        .btn-edit-custom:hover {
             transform: translateY(-2px);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             opacity: 0.9;
@@ -746,7 +757,7 @@
                 <span>Feedback</span>
             </a>
             <a href="/admin/proyektor" class="menu-item">
-                <i class="fas fa-projector"></i>
+                <i class="fas fa-video"></i>
                 <span>Proyektor</span>
             </a>
             <a href="/admin/jadwalperkuliahan" class="menu-item">
@@ -882,9 +893,9 @@
                         <label for="status_filter">Status Peminjaman</label>
                         <select id="status_filter" name="status">
                             <option value="">Semua Status</option>
-                            <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                            <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Selesai</option>
                             <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                            <option value="berlangsung" {{ request('status') == 'berlangsung' ? 'selected' : '' }}>Berlangsung</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Berlangsung</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -976,7 +987,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @if($item->pengembalian && $item->pengembalian->status == 'dikembalikan')
+                                            @if($item->tanggal_kembali)
                                                 <span class="badge status-badge status-dikembalikan">Dikembalikan</span>
                                             @else
                                                 <span class="badge status-badge status-belum-dikembalikan">Belum Dikembalikan</span>
@@ -994,9 +1005,33 @@
                                                     data-proyektor="{{ $item->proyektor ? 'Ya' : 'Tidak' }}"
                                                     data-keperluan="{{ $item->keperluan }}"
                                                     data-status="{{ $item->status }}"
-                                                    data-status-pengembalian="{{ $item->pengembalian && $item->pengembalian->status == 'dikembalikan' ? 'Dikembalikan' : 'Belum Dikembalikan' }}"
-                                                    data-keterangan="{{ $item->pengembalian->catatan ?? '-' }}">
+                                                    data-status-pengembalian="{{ $item->tanggal_kembali ? 'Dikembalikan' : 'Belum Dikembalikan' }}"
+                                                    data-keterangan="{{ $item->catatan ?? '-' }}">
                                                     <i class="fas fa-eye me-1"></i> Detail
+                                                </button>
+
+                                                <!-- Tombol Edit -->
+                                                <button class="btn btn-edit-custom btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#editModal" 
+                                                    data-id="{{ $item->id }}"
+                                                    data-peminjam="{{ $item->user->name ?? 'Guest' }}"
+                                                    data-tanggal="{{ $item->tanggal }}"
+                                                    data-ruang="{{ $item->ruang }}"
+                                                    data-proyektor="{{ $item->proyektor ? '1' : '0' }}"
+                                                    data-keperluan="{{ $item->keperluan }}"
+                                                    data-status="{{ $item->status }}"
+                                                    data-status-pengembalian="{{ $item->tanggal_kembali ? '1' : '0' }}"
+                                                    data-keterangan="{{ $item->catatan ?? '' }}">
+                                                    <i class="fas fa-edit me-1"></i> Edit
+                                                </button>
+
+                                                <!-- Tombol Hapus -->
+                                                <button class="btn btn-danger-custom btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal" 
+                                                    data-id="{{ $item->id }}"
+                                                    data-peminjam="{{ $item->user->name ?? 'Guest' }}"
+                                                    data-tanggal="{{ $item->tanggal }}">
+                                                    <i class="fas fa-trash me-1"></i> Hapus
                                                 </button>
 
                                                 <!-- Tombol Cetak -->
@@ -1110,9 +1145,29 @@
                                                 data-proyektor="{{ $item->proyektor ? 'Ya' : 'Tidak' }}"
                                                 data-keperluan="{{ $item->keperluan }}"
                                                 data-status="{{ $item->status }}"
-                                                data-status-pengembalian="{{ $item->pengembalian && $item->pengembalian->status == 'dikembalikan' ? 'Dikembalikan' : 'Belum Dikembalikan' }}"
-                                                data-keterangan="{{ $item->pengembalian->catatan ?? '-' }}">
+                                                data-status-pengembalian="{{ $item->tanggal_kembali ? 'Dikembalikan' : 'Belum Dikembalikan' }}"
+                                                data-keterangan="{{ $item->catatan ?? '-' }}">
                                                 <i class="fas fa-eye me-1"></i> Detail
+                                            </button>
+                                            <button class="btn btn-edit-custom btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#editModal" 
+                                                data-id="{{ $item->id }}"
+                                                data-peminjam="{{ $item->user->name ?? 'Guest' }}"
+                                                data-tanggal="{{ $item->tanggal }}"
+                                                data-ruang="{{ $item->ruang }}"
+                                                data-proyektor="{{ $item->proyektor ? '1' : '0' }}"
+                                                data-keperluan="{{ $item->keperluan }}"
+                                                data-status="{{ $item->status }}"
+                                                data-status-pengembalian="{{ $item->tanggal_kembali ? '1' : '0' }}"
+                                                data-keterangan="{{ $item->catatan ?? '' }}">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </button>
+                                            <button class="btn btn-danger-custom btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal" 
+                                                data-id="{{ $item->id }}"
+                                                data-peminjam="{{ $item->user->name ?? 'Guest' }}"
+                                                data-tanggal="{{ $item->tanggal }}">
+                                                <i class="fas fa-trash me-1"></i> Hapus
                                             </button>
                                             <button class="btn btn-warning-custom btn-sm" onclick="cetakRiwayat({{ $item->id }})">
                                                 <i class="fas fa-print me-1"></i> Cetak
@@ -1183,6 +1238,106 @@
                             <i class="fas fa-print me-1"></i> Cetak
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit Riwayat -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form id="editForm" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel"><i class="fas fa-edit me-2"></i> Edit Riwayat Peminjaman</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Peminjam</label>
+                                    <input type="text" class="form-control" id="edit_peminjam" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Tanggal Peminjaman</label>
+                                    <input type="date" class="form-control" id="edit_tanggal" name="tanggal" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Ruang</label>
+                                    <input type="text" class="form-control" id="edit_ruang" name="ruang" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Proyektor</label>
+                                    <select class="form-control" id="edit_proyektor" name="proyektor" required>
+                                        <option value="0">Tidak</option>
+                                        <option value="1">Ya</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">Keperluan</label>
+                                    <textarea class="form-control" id="edit_keperluan" name="keperluan" rows="3" required></textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Status Peminjaman</label>
+                                    <select class="form-control" id="edit_status" name="status" required>
+                                        <option value="pending">Berlangsung</option>
+                                        <option value="disetujui">Selesai</option>
+                                        <option value="ditolak">Ditolak</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Status Pengembalian</label>
+                                    <select class="form-control" id="edit_status_pengembalian" name="tanggal_kembali">
+                                        <option value="0">Belum Dikembalikan</option>
+                                        <option value="1">Dikembalikan</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">Keterangan</label>
+                                    <textarea class="form-control" id="edit_keterangan" name="catatan" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Hapus Riwayat -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel"><i class="fas fa-trash me-2"></i> Hapus Riwayat Peminjaman</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Apakah Anda yakin ingin menghapus riwayat peminjaman ini?</p>
+                            <div class="alert alert-warning">
+                                <strong>Peminjam:</strong> <span id="delete_peminjam"></span><br>
+                                <strong>Tanggal:</strong> <span id="delete_tanggal"></span>
+                            </div>
+                            <p class="text-danger">Tindakan ini tidak dapat dibatalkan!</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i> Hapus
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1287,6 +1442,56 @@
                 });
             }
 
+            // Handler untuk modal edit
+            const editModal = document.getElementById('editModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-id');
+                    const peminjam = button.getAttribute('data-peminjam');
+                    const tanggal = button.getAttribute('data-tanggal');
+                    const ruang = button.getAttribute('data-ruang');
+                    const proyektor = button.getAttribute('data-proyektor');
+                    const keperluan = button.getAttribute('data-keperluan');
+                    const status = button.getAttribute('data-status');
+                    const statusPengembalian = button.getAttribute('data-status-pengembalian');
+                    const keterangan = button.getAttribute('data-keterangan');
+
+                    // Update form action URL
+                    const form = document.getElementById('editForm');
+                    form.action = `/admin/riwayat/${id}`;
+
+                    // Isi data form
+                    document.getElementById('edit_peminjam').value = peminjam;
+                    document.getElementById('edit_tanggal').value = tanggal;
+                    document.getElementById('edit_ruang').value = ruang;
+                    document.getElementById('edit_proyektor').value = proyektor;
+                    document.getElementById('edit_keperluan').value = keperluan;
+                    document.getElementById('edit_status').value = status;
+                    document.getElementById('edit_status_pengembalian').value = statusPengembalian;
+                    document.getElementById('edit_keterangan').value = keterangan || '';
+                });
+            }
+
+            // Handler untuk modal hapus
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-id');
+                    const peminjam = button.getAttribute('data-peminjam');
+                    const tanggal = button.getAttribute('data-tanggal');
+
+                    // Update form action URL
+                    const form = document.getElementById('deleteForm');
+                    form.action = `/admin/riwayat/${id}`;
+
+                    // Isi data konfirmasi
+                    document.getElementById('delete_peminjam').textContent = peminjam;
+                    document.getElementById('delete_tanggal').textContent = formatDate(tanggal);
+                });
+            }
+
             // Format tanggal
             function formatDate(dateString) {
                 if (!dateString) return '-';
@@ -1321,10 +1526,10 @@
                 }
                 if (urlParams.get('status')) {
                     const statusText = {
-                        'selesai': 'Selesai',
+                        'disetujui': 'Selesai',
                         'ditolak': 'Ditolak',
-                        'berlangsung': 'Berlangsung'
-                    } [urlParams.get('status')] || urlParams.get('status');
+                        'pending': 'Berlangsung'
+                    }[urlParams.get('status')] || urlParams.get('status');
                     activeFilters.push(`Status: ${statusText}`);
                 }
                 if (urlParams.get('date_from') || urlParams.get('date_to')) {

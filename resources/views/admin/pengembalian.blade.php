@@ -699,7 +699,7 @@
                 <span>Feedback</span>
             </a>
             <a href="/admin/proyektor" class="menu-item">
-                <i class="fas fa-projector"></i>
+                <i class="fas fa-video"></i>
                 <span>Proyektor</span>
             </a>
             <a href="/admin/jadwalperkuliahan" class="menu-item">
@@ -882,117 +882,119 @@
                         </tr>
                     </thead>
                     <tbody id="pengembalian-table-body">
-                        @forelse($pengembalians as $pengembalian)
-                            <tr data-status="{{ $pengembalian->status }}" data-id="{{ $pengembalian->id }}">
-                                <td>{{ ($pengembalians->currentPage() - 1) * $pengembalians->perPage() + $loop->iteration }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="user-avatar me-2"
-                                            style="width: 30px; height: 30px; font-size: 0.8rem;">
-                                            {{ substr($pengembalian->user->name ?? 'G', 0, 1) }}
+                        @if(isset($pengembalians) && $pengembalians->count() > 0)
+                            @foreach($pengembalians as $pengembalian)
+                                <tr data-status="{{ $pengembalian->status }}" data-id="{{ $pengembalian->id }}">
+                                    <td>{{ ($pengembalians->currentPage() - 1) * $pengembalians->perPage() + $loop->iteration }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar me-2"
+                                                style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                {{ substr($pengembalian->user->name ?? 'G', 0, 1) }}
+                                            </div>
+                                            {{ $pengembalian->user->name ?? 'Guest' }}
                                         </div>
-                                        {{ $pengembalian->user->name ?? 'Guest' }}
-                                    </div>
-                                </td>
-                                <td>
-                                    <strong>{{ $pengembalian->ruang }}</strong><br>
-                                    <small class="text-muted">
-                                        {{ $pengembalian->proyektor ? 'Dengan Proyektor' : 'Tanpa Proyektor' }}
-                                    </small>
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($pengembalian->tanggal_pinjam)->format('d M Y') }}</td>
-                                <td>
-                                    @if($pengembalian->tanggal_kembali)
-                                        {{ \Carbon\Carbon::parse($pengembalian->tanggal_kembali)->format('d M Y') }}
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($pengembalian->status == 'dikembalikan')
-                                        <span class="badge status-badge status-dikembalikan">Dikembalikan</span>
-                                    @elseif($pengembalian->status == 'terlambat')
-                                        <span class="badge status-badge status-terlambat">Terlambat</span>
-                                    @else
-                                        <span class="badge status-badge status-belum-dikembalikan">Belum Dikembalikan</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $kondisi = '';
-                                        if (str_contains($pengembalian->catatan ?? '', 'Kondisi: Baik')) {
-                                            $kondisi = 'Baik';
-                                        } elseif (str_contains($pengembalian->catatan ?? '', 'Kondisi: Rusak Ringan')) {
-                                            $kondisi = 'Rusak Ringan';
-                                        } elseif (str_contains($pengembalian->catatan ?? '', 'Kondisi: Rusak Berat')) {
-                                            $kondisi = 'Rusak Berat';
-                                        }
-                                    @endphp
-                                    @if($kondisi)
-                                        <span class="badge bg-success">{{ $kondisi }}</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td title="{{ $pengembalian->catatan ?? '-' }}">
-                                    {{ \Illuminate\Support\Str::limit($pengembalian->catatan ?? '-', 30) }}
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-2 action-buttons">
-                                        @if ($pengembalian->status != 'dikembalikan')
-                                            <button class="btn btn-success-custom btn-sm" data-bs-toggle="modal"
-                                                data-bs-target="#returnModal" 
+                                    </td>
+                                    <td>
+                                        <strong>{{ $pengembalian->ruang }}</strong><br>
+                                        <small class="text-muted">
+                                            {{ $pengembalian->proyektor ? 'Dengan Proyektor' : 'Tanpa Proyektor' }}
+                                        </small>
+                                    </td>
+                                    <td>{{ \Carbon\Carbon::parse($pengembalian->tanggal_pinjam)->format('d M Y') }}</td>
+                                    <td>
+                                        @if($pengembalian->tanggal_kembali)
+                                            {{ \Carbon\Carbon::parse($pengembalian->tanggal_kembali)->format('d M Y') }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($pengembalian->status == 'dikembalikan')
+                                            <span class="badge status-badge status-dikembalikan">Dikembalikan</span>
+                                        @elseif($pengembalian->status == 'terlambat')
+                                            <span class="badge status-badge status-terlambat">Terlambat</span>
+                                        @else
+                                            <span class="badge status-badge status-belum-dikembalikan">Belum Dikembalikan</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $kondisi = '';
+                                            if (str_contains($pengembalian->catatan ?? '', 'Kondisi: Baik')) {
+                                                $kondisi = 'Baik';
+                                            } elseif (str_contains($pengembalian->catatan ?? '', 'Kondisi: Rusak Ringan')) {
+                                                $kondisi = 'Rusak Ringan';
+                                            } elseif (str_contains($pengembalian->catatan ?? '', 'Kondisi: Rusak Berat')) {
+                                                $kondisi = 'Rusak Berat';
+                                            }
+                                        @endphp
+                                        @if($kondisi)
+                                            <span class="badge bg-success">{{ $kondisi }}</span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td title="{{ $pengembalian->catatan ?? '-' }}">
+                                        {{ \Illuminate\Support\Str::limit($pengembalian->catatan ?? '-', 30) }}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 action-buttons">
+                                            @if ($pengembalian->status != 'dikembalikan')
+                                                <button class="btn btn-success-custom btn-sm" data-bs-toggle="modal"
+                                                    data-bs-target="#returnModal" 
+                                                    data-id="{{ $pengembalian->id }}"
+                                                    data-peminjam="{{ $pengembalian->user->name ?? 'Guest' }}"
+                                                    data-barang="{{ $pengembalian->ruang }} - {{ $pengembalian->proyektor ? 'Dengan Proyektor' : 'Tanpa Proyektor' }}"
+                                                    data-tanggal-pinjam="{{ $pengembalian->tanggal_pinjam }}"
+                                                    data-tanggal-jatuh-tempo="{{ $pengembalian->tanggal_pinjam }}">
+                                                    <i class="fas fa-undo me-1"></i> Kembalikan
+                                                </button>
+                                            @endif
+
+                                            <!-- Tombol Detail -->
+                                            <button class="btn btn-info-custom btn-sm" data-bs-toggle="modal"
+                                                data-bs-target="#detailModal" 
                                                 data-id="{{ $pengembalian->id }}"
                                                 data-peminjam="{{ $pengembalian->user->name ?? 'Guest' }}"
                                                 data-barang="{{ $pengembalian->ruang }} - {{ $pengembalian->proyektor ? 'Dengan Proyektor' : 'Tanpa Proyektor' }}"
                                                 data-tanggal-pinjam="{{ $pengembalian->tanggal_pinjam }}"
-                                                data-tanggal-jatuh-tempo="{{ $pengembalian->tanggal_pinjam }}">
-                                                <i class="fas fa-undo me-1"></i> Kembalikan
+                                                data-tanggal-jatuh-tempo="{{ $pengembalian->tanggal_pinjam }}"
+                                                data-tanggal-kembali="{{ $pengembalian->tanggal_kembali }}"
+                                                data-kondisi="{{ $kondisi }}"
+                                                data-keterangan="{{ $pengembalian->catatan }}"
+                                                data-status="{{ $pengembalian->status }}">
+                                                <i class="fas fa-eye me-1"></i> Detail
                                             </button>
-                                        @endif
 
-                                        <!-- Tombol Detail -->
-                                        <button class="btn btn-info-custom btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#detailModal" 
-                                            data-id="{{ $pengembalian->id }}"
-                                            data-peminjam="{{ $pengembalian->user->name ?? 'Guest' }}"
-                                            data-barang="{{ $pengembalian->ruang }} - {{ $pengembalian->proyektor ? 'Dengan Proyektor' : 'Tanpa Proyektor' }}"
-                                            data-tanggal-pinjam="{{ $pengembalian->tanggal_pinjam }}"
-                                            data-tanggal-jatuh-tempo="{{ $pengembalian->tanggal_pinjam }}"
-                                            data-tanggal-kembali="{{ $pengembalian->tanggal_kembali }}"
-                                            data-kondisi="{{ $kondisi }}"
-                                            data-keterangan="{{ $pengembalian->catatan }}"
-                                            data-status="{{ $pengembalian->status }}">
-                                            <i class="fas fa-eye me-1"></i> Detail
-                                        </button>
-
-                                        <!-- Tombol Hapus -->
-                                        <form action="{{ route('admin.pengembalian.destroy', $pengembalian->id) }}"
-                                            method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger-custom btn-sm">
-                                                <i class="fas fa-trash me-1"></i> Hapus
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
+                                            <!-- Tombol Hapus -->
+                                            <form action="{{ route('admin.pengembalian.destroy', $pengembalian->id) }}"
+                                                method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger-custom btn-sm">
+                                                    <i class="fas fa-trash me-1"></i> Hapus
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
                             <tr>
                                 <td colspan="9" class="empty-state">
                                     <i class="fas fa-inbox"></i><br>
                                     Belum ada data pengembalian
                                 </td>
                             </tr>
-                        @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- Pagination -->
-        @if ($pengembalians->hasPages())
+        @if(isset($pengembalians) && $pengembalians->hasPages())
             <div class="pagination-container">
                 <nav>
                     <ul class="pagination">
@@ -1158,11 +1160,15 @@
                                 <select class="form-select" id="peminjaman_id" name="peminjaman_id" required>
                                     <option value="">-- Pilih Peminjaman --</option>
                                     <!-- Data peminjaman akan diisi dari backend -->
-                                    @foreach($peminjamansAktif as $peminjaman)
-                                        <option value="{{ $peminjaman->id }}">
-                                            {{ $peminjaman->user->name ?? 'Guest' }} - {{ $peminjaman->ruang }} ({{ \Carbon\Carbon::parse($peminjaman->tanggal)->format('d M Y') }})
-                                        </option>
-                                    @endforeach
+                                    @if(isset($peminjamansAktif) && $peminjamansAktif->count() > 0)
+                                        @foreach($peminjamansAktif as $peminjaman)
+                                            <option value="{{ $peminjaman->id }}">
+                                                {{ $peminjaman->user->name ?? 'Guest' }} - {{ $peminjaman->ruang }} ({{ \Carbon\Carbon::parse($peminjaman->tanggal)->format('d M Y') }})
+                                            </option>
+                                        @endforeach
+                                    @else
+                                        <option value="" disabled>Tidak ada peminjaman aktif</option>
+                                    @endif
                                 </select>
                             </div>
                             <div class="mb-3">

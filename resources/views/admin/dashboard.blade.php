@@ -691,7 +691,7 @@
                 <span>Feedback</span>
             </a>
             <a href="/admin/proyektor" class="menu-item">
-                <i class="fas fa-projector"></i>
+                <i class="fas fa-video"></i>
                 <span>Proyektor</span>
             </a>
             <a href="/admin/jadwalperkuliahan" class="menu-item">
